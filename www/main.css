@@ -1,0 +1,214 @@
+@font-face {
+  font-family: 'DungGeunMo';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('./DungGeunMo.woff2') format('woff2');
+}
+
+:root {
+  --foreground-color: #d4d4d4;
+  --background-color: #1e1e1e;
+  --comment-color: #6a9955;
+  --error-color: #f44747;
+  --foreign-color: #d16969;
+  --escape-color: #d7ba7d;
+  --keyword-color: #c586c0;
+  --keyword-color-2: #569cd6;
+  --type-color: #4ec9b0;
+  --trivial-color: #808080;
+  --key-color: #9cdcfe;
+  --key-color-2: #4fc1ff;
+  --string-value-color: #ce9178;
+  --function-value-color: #dcdcaa;
+  --number-value-color: #b5cea8;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: DungGeunMo, monospace;
+  font-size: 32px;
+  line-height: 1;
+  margin: 0;
+  background: var(--background-color);
+  color: var(--trivial-color);
+  overflow: hidden;
+}
+
+sup,
+sub {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+* {
+  font: inherit;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+.outlined-text {
+  text-shadow: 1px 1px var(--background-color), -1px -1px var(--background-color), 1px -1px var(--background-color),
+    -1px 1px var(--background-color), 1px 0px var(--background-color), 0px 1px var(--background-color),
+    -1px 0px var(--background-color), 0px -1px var(--background-color);
+  color: #fff;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+input,
+button {
+  padding: 0;
+  border: 0;
+  outline: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  background-color: transparent;
+  box-sizing: border-box;
+}
+
+input:focus {
+  background-color: #fff;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+button:disabled:hover {
+  color: var(--trivial-color);
+  cursor: default;
+}
+
+button:hover {
+  color: var(--key-color);
+}
+
+button:active {
+  color: var(--foreground-color);
+}
+
+button:before {
+  color: var(--foreground-color);
+  content: ' ';
+}
+
+button:after {
+  color: var(--foreground-color);
+  content: ' ';
+}
+
+button:focus:before {
+  content: '[';
+}
+
+button:focus:after {
+  content: ']';
+}
+
+input {
+  background-color: var(--foreground-color);
+  color: var(--background-color);
+  padding: 0 0.25em;
+}
+
+#root {
+  position: relative;
+  height: 100%;
+}
+
+.screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  width: min(46em, 100%);
+  height: 32.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nes-box {
+  box-sizing: border-box;
+  background: var(--background-color);
+  color: var(--foreground-color);
+  padding: 0.5em;
+  margin: 0.125em;
+  outline-color: var(--background-color);
+  outline-style: solid;
+  outline-width: 0.125em;
+  border: 0.125em solid currentColor;
+  border-radius: 0.25em;
+  position: relative;
+  z-index: 2;
+}
+
+.game-title {
+  padding-left: 1.75em;
+  color: #fff;
+}
+
+.input-area {
+  margin: 1em 0;
+  padding-left: 1.75em;
+}
+
+.number-input {
+  width: 1em;
+  margin: 0 0.25em;
+}
+
+.number-input:disabled {
+  background-color: var(--trivial-color);
+}
+
+.scoreboard {
+  color: var(--trivial-color);
+}
+
+.scoreboard__cell {
+  padding: 0 0.5em;
+}
+
+.history-number {
+  color: var(--number-value-color);
+}
+
+.ball-result {
+  color: var(--type-color);
+}
+
+.strike-result {
+  color: var(--string-value-color);
+}
+
+.alert-message {
+  position: absolute;
+  top: -2em;
+  width: 100%;
+  left: 0;
+}
