@@ -3,10 +3,13 @@
   "scripts": {
     "build": "esbuild --bundle src/main.tsx --outfile=www/main.js",
     "dev": "yarn build --  --sourcemap --servedir=www",
-    "start": "yarn build -- --minify --sourcemap --servedir=www"
+    "start": "yarn build -- --minify --sourcemap --servedir=www",
+    "deploy": "yarn build && gh-pages -d www && rimraf www/main.js"
   },
   "devDependencies": {
     "esbuild": "^0.14.11",
+    "gh-pages": "^3.2.3",
+    "rimraf": "^3.0.2",
     "typescript": "^4.5.4"
   },
   "dependencies": {
