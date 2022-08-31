@@ -20446,6 +20446,10 @@ For more info, visit https://reactjs.org/link/mock-scheduler`);
       }
       return () => void 0;
     }, [message]);
+    (0, import_react.useEffect)(() => {
+      if (values[0] === null && values[1] === null && values[2] === null && values[3] === null && !history.length)
+        document.querySelector(".number-input")?.focus();
+    }, [values, history]);
     const onHit = () => {
       if (!values.every((v) => typeof v === "number")) {
         setMessage("\uC81C\uB300\uB85C \uC785\uB825\uD558\uC138\uC694!");
@@ -20454,10 +20458,12 @@ For more info, visit https://reactjs.org/link/mock-scheduler`);
       const alreadyTried = history.findIndex((a) => a[0] === values[0] && a[1] === values[1] && a[2] === values[2] && a[3] === values[3]);
       if (alreadyTried !== -1) {
         setMessage(`${alreadyTried + 1}\uD68C\uCC28\uC5D0 \uC774\uBBF8 \uC2DC\uB3C4\uD588\uC5B4\uC694.`);
+        document.querySelector(".number-input")?.focus();
         return;
       }
       if (new Set(values).size !== 4) {
         setMessage("\uC785\uB825\uC5D0 \uC911\uBCF5\uB418\uB294 \uC22B\uC790\uAC00 \uC788\uC2B5\uB2C8\uB2E4.");
+        document.querySelector(".number-input")?.focus();
         return;
       }
       let [s, b] = [0, 0];
@@ -20467,11 +20473,21 @@ For more info, visit https://reactjs.org/link/mock-scheduler`);
         else if (values.includes(theNumber[i]))
           b += 1;
       }
+      if (s === 4) {
+        setMessage(`\uCD95\uD558\uD569\uB2C8\uB2E4! ${history.length + 1} \uD68C\uCC28\uC5D0 \uC131\uACF5!`);
+      } else if (history.length >= 8) {
+        setMessage(`\uC815\uB2F5\uC740 ${theNumber.join("")}\uC600\uC2B5\uB2C8\uB2E4.`);
+      }
+      if (s === 4 || history.length >= 8)
+        document.querySelector("#reset-button")?.focus();
+      else
+        document.querySelector(".number-input")?.focus();
       setHistory((prev) => [...prev, [...values, s, b]]);
     };
     const resetGame = () => {
       setTheNumber(createTheNumber);
       setHistory([]);
+      setValues([null, null, null, null]);
     };
     const gameEnded = history.length >= 9 || history.some((i) => i[4] === 4);
     return /* @__PURE__ */ import_react.default.createElement("div", {
@@ -20490,8 +20506,9 @@ For more info, visit https://reactjs.org/link/mock-scheduler`);
       style: { color: "var(--escape-color)" }
     }, "\uC9C0\uB2A5\uAC1C\uBC1C"), ",", " ", /* @__PURE__ */ import_react.default.createElement("span", {
       style: { color: "var(--key-color-2)" }
-    }, "\uB450\uB1CC\uBC1C\uC804"), "!"), /* @__PURE__ */ import_react.default.createElement("div", {
-      className: "input-area"
+    }, "\uB450\uB1CC\uBC1C\uC804"), "!"), /* @__PURE__ */ import_react.default.createElement("form", {
+      className: "input-area",
+      onSubmit: (e) => e.preventDefault()
     }, Array.from(Array(4), (_, i) => i).map((digit) => /* @__PURE__ */ import_react.default.createElement("input", {
       key: digit,
       className: "number-input",
@@ -20501,17 +20518,22 @@ For more info, visit https://reactjs.org/link/mock-scheduler`);
       onChange: (e) => {
         const value = parseInt(e.target.value, 10);
         setValues((prev) => Object.assign([...prev], { [digit]: Number.isNaN(value) ? null : value }));
+      },
+      onInput: (e) => {
+        const target = e.target;
+        const value = parseInt(target.value, 10);
         if (!Number.isNaN(value))
-          e.target.nextElementSibling?.focus();
+          target.nextElementSibling?.focus();
       },
       maxLength: 1,
       disabled: gameEnded
     })), /* @__PURE__ */ import_react.default.createElement("button", {
-      type: "button",
+      type: "submit",
       onClick: onHit,
       disabled: gameEnded
     }, "\uB9DE\uD788\uAE30"), /* @__PURE__ */ import_react.default.createElement("button", {
       type: "button",
+      id: "reset-button",
       onClick: resetGame
     }, "\uB2E4\uC2DC\uC2DC\uC791")), /* @__PURE__ */ import_react.default.createElement("table", {
       className: "scoreboard"
