@@ -23,7 +23,10 @@ export default function App() {
     }
     return () => undefined;
   }, [message]);
-
+  useEffect(() => {
+    if (values[0] === null && values[1] === null && values[2] === null && values[3] === null && !history.length)
+      document.querySelector<HTMLInputElement>('.number-input')?.focus();
+  }, [values, history]);
   const onHit = () => {
     if (!values.every((v): v is number => typeof v === 'number')) {
       setMessage('제대로 입력하세요!');
@@ -34,10 +37,12 @@ export default function App() {
     );
     if (alreadyTried !== -1) {
       setMessage(`${alreadyTried + 1}회차에 이미 시도했어요.`);
+      document.querySelector<HTMLInputElement>('.number-input')?.focus();
       return;
     }
     if (new Set(values).size !== 4) {
       setMessage('입력에 중복되는 숫자가 있습니다.');
+      document.querySelector<HTMLInputElement>('.number-input')?.focus();
       return;
     }
 
@@ -46,11 +51,19 @@ export default function App() {
       if (theNumber[i] === values[i]) s += 1;
       else if (values.includes(theNumber[i])) b += 1;
     }
+    if (s === 4) {
+      setMessage(`축하합니다! ${history.length + 1} 회차에 성공!`);
+    } else if (history.length >= 8) {
+      setMessage(`정답은 ${theNumber.join('')}였습니다.`);
+    }
+    if (s === 4 || history.length >= 8) document.querySelector<HTMLButtonElement>('#reset-button')?.focus();
+    else document.querySelector<HTMLInputElement>('.number-input')?.focus();
     setHistory((prev) => [...prev, [...values, s, b]]);
   };
   const resetGame = () => {
     setTheNumber(createTheNumber);
     setHistory([]);
+    setValues([null, null, null, null]);
   };
   const gameEnded = history.length >= 9 || history.some((i) => i[4] === 4);
   return (
@@ -66,7 +79,7 @@ export default function App() {
           <span style={{ color: 'var(--escape-color)' }}>지능개발</span>,{' '}
           <span style={{ color: 'var(--key-color-2)' }}>두뇌발전</span>!
         </h1>
-        <div className="input-area">
+        <form className="input-area" onSubmit={(e) => e.preventDefault()}>
           {Array.from(Array(4), (_, i) => i).map((digit) => (
             <input
               key={digit}
@@ -77,19 +90,24 @@ export default function App() {
               onChange={(e) => {
                 const value = parseInt(e.target.value, 10);
                 setValues((prev) => Object.assign([...prev], { [digit]: Number.isNaN(value) ? null : value }));
-                if (!Number.isNaN(value)) (e.target.nextElementSibling as HTMLElement)?.focus();
+              }}
+              onInput={(e) => {
+                // 값이 바뀌지 않았더라도 다음 칸으로 넘기기 위해서 onChange 대신 onInput에서 처리
+                const target = e.target as HTMLInputElement;
+                const value = parseInt(target.value, 10);
+                if (!Number.isNaN(value)) (target.nextElementSibling as HTMLElement)?.focus();
               }}
               maxLength={1}
               disabled={gameEnded}
             />
           ))}
-          <button type="button" onClick={onHit} disabled={gameEnded}>
+          <button type="submit" onClick={onHit} disabled={gameEnded}>
             맞히기
           </button>
-          <button type="button" onClick={resetGame}>
+          <button type="button" id="reset-button" onClick={resetGame}>
             다시시작
           </button>
-        </div>
+        </form>
         <table className="scoreboard">
           <thead>
             <tr>
