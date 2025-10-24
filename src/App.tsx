@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 const createTheNumber = () => {
   const ns = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
@@ -9,147 +9,153 @@ const createTheNumber = () => {
   return theNumber;
 };
 
+const mapToDigit = (value: string): number | null => {
+  if (!value) return null;
+  const digit = parseInt(value, 10);
+  return Number.isInteger(digit) && digit >= 0 && digit < 10 ? digit : NaN;
+};
+
 export default function App() {
   const [theNumber, setTheNumber] = useState(createTheNumber);
-  const [values, setValues] = useState<(number | null)[]>([null, null, null, null]);
+  const [values, setValues] = useState<(number | null)[]>(Array(4).fill(null));
   const [history, setHistory] = useState<number[][]>([]);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
+  const firstInputRef = useRef<HTMLInputElement>(null);
+  const resetButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (message) {
-      const onclick = () => setMessage('');
-      window.addEventListener('click', onclick);
-      return () => window.removeEventListener('click', onclick);
-    }
-    return () => undefined;
-  }, [message]);
-  useEffect(() => {
-    if (values[0] === null && values[1] === null && values[2] === null && values[3] === null && !history.length)
-      document.querySelector<HTMLInputElement>('.number-input')?.focus();
+    if (history.length || values.some((it) => it !== null)) return;
+    firstInputRef.current?.focus();
   }, [values, history]);
-  const onHit = () => {
-    if (!values.every((v): v is number => typeof v === 'number')) {
-      setMessage('제대로 입력하세요!');
-      return;
-    }
-    const alreadyTried = history.findIndex(
-      (a) => a[0] === values[0] && a[1] === values[1] && a[2] === values[2] && a[3] === values[3],
-    );
-    if (alreadyTried !== -1) {
-      setMessage(`${alreadyTried + 1}회차에 이미 시도했어요.`);
-      document.querySelector<HTMLInputElement>('.number-input')?.focus();
-      return;
-    }
-    if (new Set(values).size !== 4) {
-      setMessage('입력에 중복되는 숫자가 있습니다.');
-      document.querySelector<HTMLInputElement>('.number-input')?.focus();
-      return;
-    }
 
-    let [s, b] = [0, 0];
-    for (let i = 0; i < 4; i += 1) {
-      if (theNumber[i] === values[i]) s += 1;
-      else if (values.includes(theNumber[i])) b += 1;
+  const onHit = () => {
+    if (!values.every((it): it is number => it !== null)) {
+      setMessage("제대로 입력하세요!");
+    } else {
+      const alreadyTried = history.findIndex((values0) =>
+        values0.every((x, i) => (i < 4 ? x === values[i] : true))
+      );
+      if (alreadyTried !== -1) {
+        setMessage(`${alreadyTried + 1}회차에 이미 시도했어요.`);
+        firstInputRef.current?.focus();
+      } else if (new Set(values).size !== 4) {
+        setMessage("입력에 중복되는 숫자가 있습니다.");
+        firstInputRef.current?.focus();
+      } else {
+        let [s, b] = [0, 0];
+        for (let i = 0; i < 4; i += 1) {
+          if (theNumber[i] === values[i]) s += 1;
+          else if (values.includes(theNumber[i])) b += 1;
+        }
+        if (s === 4) {
+          setMessage(`축하합니다! ${history.length + 1} 회차에 성공!`);
+          resetButtonRef.current?.focus();
+        } else if (history.length >= 8) {
+          setMessage(`정답은 ${theNumber.join("")}였습니다.`);
+          resetButtonRef.current?.focus();
+        } else {
+          setMessage("");
+          firstInputRef.current?.focus();
+        }
+        setHistory((prev) => [...prev, [...values, s, b]]);
+      }
     }
-    if (s === 4) {
-      setMessage(`축하합니다! ${history.length + 1} 회차에 성공!`);
-    } else if (history.length >= 8) {
-      setMessage(`정답은 ${theNumber.join('')}였습니다.`);
-    }
-    if (s === 4 || history.length >= 8) document.querySelector<HTMLButtonElement>('#reset-button')?.focus();
-    else document.querySelector<HTMLInputElement>('.number-input')?.focus();
-    setHistory((prev) => [...prev, [...values, s, b]]);
   };
-  const resetGame = () => {
-    setTheNumber(createTheNumber);
-    setHistory([]);
-    setValues([null, null, null, null]);
-  };
+
   const gameEnded = history.length >= 9 || history.some((i) => i[4] === 4);
+
   return (
     <div className="screen">
       <div className="nes-box">
         {message && (
-          <div className="alert-message">
+          <button className="alert-message" onClick={() => setMessage("")}>
             <div className="nes-box">{message}</div>
-          </div>
+          </button>
         )}
         <h1 className="game-title">
-          <span style={{ color: 'var(--keyword-color)' }}>숫자야구</span> -{' '}
-          <span style={{ color: 'var(--escape-color)' }}>지능개발</span>,{' '}
-          <span style={{ color: 'var(--key-color-2)' }}>두뇌발전</span>!
+          <span style={{ color: "var(--keyword-color)" }}>숫자야구</span> -{" "}
+          <span style={{ color: "var(--escape-color)" }}>지능개발</span>,{" "}
+          <span style={{ color: "var(--key-color-2)" }}>두뇌발전</span>!
         </h1>
         <form className="input-area" onSubmit={(e) => e.preventDefault()}>
-          {Array.from(Array(4), (_, i) => i).map((digit) => (
+          {Array.from(Array(4), (_, i) => i).map((i) => (
             <input
-              key={digit}
+              key={i}
+              ref={i === 0 ? firstInputRef : undefined}
               className="number-input"
               type="text"
-              value={values[digit] === null ? '' : `${values[digit] as number}`}
-              onFocus={(e) => e.target.select()}
+              value={values[i] === null ? "" : `${values[i] as number}`}
+              onFocus={(e) => e.currentTarget.select()}
+              onClick={(e) => e.currentTarget.select()}
               onChange={(e) => {
-                const value = parseInt(e.target.value, 10);
-                setValues((prev) => Object.assign([...prev], { [digit]: Number.isNaN(value) ? null : value }));
+                const value = mapToDigit(e.currentTarget.value);
+                if (Number.isNaN(value)) return;
+                setValues(values.map((x, j) => (i === j ? value : x)));
               }}
               onInput={(e) => {
-                // 값이 바뀌지 않았더라도 다음 칸으로 넘기기 위해서 onChange 대신 onInput에서 처리
-                const target = e.target as HTMLInputElement;
-                const value = parseInt(target.value, 10);
-                if (!Number.isNaN(value)) (target.nextElementSibling as HTMLElement)?.focus();
+                const value = mapToDigit(e.currentTarget.value);
+                if ((Number.isNaN(value) ? values[i] : value) === null) return;
+                (e.currentTarget.nextElementSibling as HTMLElement)?.focus();
               }}
               maxLength={1}
               disabled={gameEnded}
             />
           ))}
-          <button type="submit" onClick={onHit} disabled={gameEnded}>
+          <button
+            type="submit"
+            className="text-button"
+            onClick={onHit}
+            disabled={gameEnded}
+          >
             맞히기
           </button>
-          <button type="button" id="reset-button" onClick={resetGame}>
+          <button
+            type="button"
+            ref={resetButtonRef}
+            className="text-button"
+            id="reset-button"
+            onClick={() => {
+              setMessage("");
+              setTheNumber(createTheNumber);
+              setHistory([]);
+              setValues(Array(4).fill(null));
+            }}
+          >
             다시시작
           </button>
         </form>
         <table className="scoreboard">
           <thead>
             <tr>
-              <th className="scoreboard__cell">&nbsp;</th>
-              <th className="scoreboard__cell">1</th>
-              <th className="scoreboard__cell">2</th>
-              <th className="scoreboard__cell">3</th>
-              <th className="scoreboard__cell">4</th>
-              <th className="scoreboard__cell">S</th>
-              <th className="scoreboard__cell">B</th>
-              <th className="scoreboard__cell">&nbsp;&nbsp;&nbsp;&nbsp;</th>
+              {["", 1, 2, 3, 4, "S", "B", ""].map((it, i) => (
+                <th key={i} className="scoreboard__cell">
+                  {it}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {Array.from(Array(9), (_, i) => i).map((key) => {
-              const [fst, snd, trd, fth, s, b] = history[key] || ['', '', '', '', ''];
+            {Array.from(Array(9), (_, i) => i).map((i) => {
+              const item = history.at(i) ?? Array<number | null>(6).fill(null);
               return (
-                // eslint-disable-next-line react/no-array-index-key
-                <tr key={key}>
-                  <td className="scoreboard__cell">{key + 1}</td>
+                <tr key={i}>
+                  <td className="scoreboard__cell">{i + 1}</td>
+                  {item.map((number, j) => {
+                    let className = "history-number";
+                    if (j === 4) className = "strike-result";
+                    else if (j === 5) className = "ball-result";
+                    return (
+                      <td key={j} className="scoreboard__cell">
+                        <span className={className}>{number}</span>
+                      </td>
+                    );
+                  })}
                   <td className="scoreboard__cell">
-                    <span className="history-number">{fst}</span>
-                  </td>
-                  <td className="scoreboard__cell">
-                    <span className="history-number">{snd}</span>
-                  </td>
-                  <td className="scoreboard__cell">
-                    <span className="history-number">{trd}</span>
-                  </td>
-                  <td className="scoreboard__cell">
-                    <span className="history-number">{fth}</span>
-                  </td>
-                  <td className="scoreboard__cell">
-                    <span className="strike-result">{s}</span>
-                  </td>
-                  <td className="scoreboard__cell">
-                    <span className="ball-result">{b}</span>
-                  </td>
-                  <td className="scoreboard__cell">
-                    {s === 4 && <span style={{ color: 'var(--escape-color' }}>승리!</span>}
-                    {history.length >= 9 && key === 8 && s !== 4 && (
-                      <span style={{ color: 'var(--escape-color' }}>패배!</span>
+                    {item[4] !== null && (
+                      <span style={{ color: "var(--escape-color" }}>
+                        {item[4] === 4 && "승리!"}
+                        {i === 8 && item[4] !== 4 && "패배!"}
+                      </span>
                     )}
                   </td>
                 </tr>
