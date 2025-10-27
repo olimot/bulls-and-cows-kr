@@ -94,6 +94,7 @@ export default function App() {
               }}
               onInput={(e) => {
                 const value = mapToDigit(e.currentTarget.value);
+                if (value === null) return;
                 if ((Number.isNaN(value) ? values[i] : value) === null) return;
                 (e.currentTarget.nextElementSibling as HTMLElement)?.focus();
               }}
